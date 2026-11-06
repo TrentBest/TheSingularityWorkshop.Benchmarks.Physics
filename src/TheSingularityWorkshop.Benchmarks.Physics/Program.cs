@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using TheSingularityWorkshop.Physics.Astronomy;
 using TheSingularityWorkshop.Physics.Collision;
 using TheSingularityWorkshop.Physics.Numerics;
 using TheSingularityWorkshop.Physics.Spatial;
@@ -52,14 +53,14 @@ public class Vector3dBatchBenchmarks
         }
     }
 
-    [Benchmark(Baseline = true)]
+    [Benchmark(Baseline = true, Description = "PHY-VEC-AOS-ADD")]
     public void PhysicsVector3dAoS()
     {
         for (var i = 0; i < Count; i++)
             _aosOutput[i] = _aosA[i] + _aosB[i];
     }
 
-    [Benchmark]
+    [Benchmark(Description = "PHY-VEC-SOA-ADD")]
     public void Vector3dBatchSoA() =>
         Vector3dBatch.Add(_ax, _ay, _az, _bx, _by, _bz, _ox, _oy, _oz);
 }
@@ -119,6 +120,54 @@ public class SweepAndPruneBenchmarks
             throw new InvalidOperationException("Sweep-and-prune candidates differ from the brute-force AABB reference.");
     }
 
-    [Benchmark]
+    [Benchmark(Description = "PHY-COLL-SAP-CANDIDATES")]
     public int FindCandidates() => SweepAndPruneBroadphase.FindCandidates(_proxies).Count;
+}
+
+
+/// <summary>Measures the deterministic velocity-Verlet N-body step as population grows.</summary>
+/// <remarks>
+/// This is a scaling measurement of the current O(N²) CPU reference implementation, not a
+/// comparison against a different integrator. Fixture construction and determinism checks are
+/// outside the timed operation.
+/// </remarks>
+[MemoryDiagnoser]
+public class NewtonianNBodyBenchmarks
+{
+    private const double GravitationalConstant = 6.67430e-11;
+    private const double DeltaTimeSeconds = 0.01d;
+    private OrbitalBodyState[] _bodies = [];
+
+    [Params(8, 32, 128, 256)]
+    public int BodyCount { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _bodies = new OrbitalBodyState[BodyCount];
+        for (var i = 0; i < BodyCount; i++)
+        {
+            var angle = (2d * Math.PI * i) / BodyCount;
+            var radius = 1_000d + (i * 0.125d);
+            var x = Math.Cos(angle) * radius;
+            var y = Math.Sin(angle) * radius;
+            _bodies[i] = new OrbitalBodyState(
+                $"body-{i:D4}",
+                1.0e10d + (i * 1.0e7d),
+                1d,
+                new Vector3d(x, y, (i % 7) * 0.25d),
+                new Vector3d(-Math.Sin(angle) * 0.001d, Math.Cos(angle) * 0.001d, 0d));
+        }
+
+        var first = NewtonianNBodyStepper.Step(_bodies, DeltaTimeSeconds, GravitationalConstant);
+        var second = NewtonianNBodyStepper.Step(_bodies, DeltaTimeSeconds, GravitationalConstant);
+        if (first.Length != BodyCount || !first.SequenceEqual(second))
+            throw new InvalidOperationException("N-body step output is not deterministic for the fixed fixture.");
+        if (!first.Select(body => body.BodyId).SequenceEqual(first.Select(body => body.BodyId).OrderBy(id => id, StringComparer.Ordinal)))
+            throw new InvalidOperationException("N-body output is not in deterministic body-ID order.");
+    }
+
+    [Benchmark(Description = "PHY-NBODY-VERLET-STEP")]
+    public OrbitalBodyState[] Step() =>
+        NewtonianNBodyStepper.Step(_bodies, DeltaTimeSeconds, GravitationalConstant);
 }
