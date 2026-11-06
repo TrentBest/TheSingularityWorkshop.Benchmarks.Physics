@@ -1,7 +1,7 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using TheSingularityWorkshop.Physics.Collision;
-using TheSingularityWorkshop.Physics.Math;
+using TheSingularityWorkshop.Physics.Numerics;
 using TheSingularityWorkshop.Physics.Spatial;
 
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
@@ -100,8 +100,23 @@ public class SweepAndPruneBenchmarks
         }
 
         var result = SweepAndPruneBroadphase.FindCandidates(_proxies);
-        if (!result.SequenceEqual(result.OrderBy(pair => pair.FirstId).ThenBy(pair => pair.SecondId)))
-            throw new InvalidOperationException("Broadphase output is not in deterministic pair order.");
+        var expected = new List<BroadphasePair>();
+        for (var i = 0; i < _proxies.Length; i++)
+        for (var j = i + 1; j < _proxies.Length; j++)
+        {
+            if (!_proxies[i].Bounds.Intersects(_proxies[j].Bounds))
+                continue;
+            expected.Add(new BroadphasePair(
+                Math.Min(_proxies[i].Id, _proxies[j].Id),
+                Math.Max(_proxies[i].Id, _proxies[j].Id)));
+        }
+        expected.Sort(static (a, b) =>
+        {
+            var first = a.FirstId.CompareTo(b.FirstId);
+            return first != 0 ? first : a.SecondId.CompareTo(b.SecondId);
+        });
+        if (!result.SequenceEqual(expected))
+            throw new InvalidOperationException("Sweep-and-prune candidates differ from the brute-force AABB reference.");
     }
 
     [Benchmark]
