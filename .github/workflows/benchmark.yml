@@ -1,0 +1,38 @@
+name: Physics benchmarks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [development]
+  push:
+    branches: [development]
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: TheSingularityWorkshop.Benchmarks.Physics
+      - uses: actions/checkout@v4
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Physics
+          ref: 7c8b7c8d33ea2905568cf6dc901cdd778228b07d
+          path: TheSingularityWorkshop.Physics
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build benchmark harness
+        run: dotnet build TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release
+      - name: Run benchmark smoke suite
+        run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*Vector3dBatchBenchmarks*' --job Dry
+      - name: Upload BenchmarkDotNet artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: physics-benchmark-artifacts
+          path: BenchmarkDotNet.Artifacts
+          if-no-files-found: warn
