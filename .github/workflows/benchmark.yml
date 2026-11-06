@@ -27,8 +27,12 @@ jobs:
           dotnet-version: 8.0.x
       - name: Build benchmark harness
         run: dotnet build TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release
-      - name: Run benchmark smoke suite
+      - name: Run vector batch smoke benchmarks
         run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*Vector3dBatchBenchmarks*' --job Dry
+      - name: Run broadphase smoke benchmarks
+        run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*SweepAndPruneBenchmarks*' --job Dry
+      - name: Run N-body smoke benchmarks
+        run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*NewtonianNBodyBenchmarks*' --job Dry
       - name: Upload BenchmarkDotNet artifacts
         if: always()
         uses: actions/upload-artifact@v4
