@@ -1,4 +1,19 @@
+<p align="center">
+  <a href="https://github.com/TrentBest/TheSingularityWorkshop.Visualize">
+    <img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg" alt="The Singularity Workshop" width="720" />
+  </a>
+</p>
+
 # TheSingularityWorkshop.Benchmarks.Physics
+
+[![Benchmarks](https://github.com/TrentBest/TheSingularityWorkshop.Benchmarks.Physics/actions/workflows/benchmark.yml/badge.svg?branch=development)](https://github.com/TrentBest/TheSingularityWorkshop.Benchmarks.Physics/actions/workflows/benchmark.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Last commit](https://img.shields.io/github/last-commit/TrentBest/TheSingularityWorkshop.Benchmarks.Physics/development)](https://github.com/TrentBest/TheSingularityWorkshop.Benchmarks.Physics/commits/development)
+
+[![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.Benchmarks.Physics/actions/workflows/sith-policy.yml)
+
+Dedicated performance experiments for the Physics package.
+
 
 Reproducible performance experiments for the Physics package. The suite measures executable package behavior; timings are not correctness or release verdicts.
 
@@ -42,3 +57,5 @@ The CI workflow checks out Physics at an explicit commit SHA and runs a short sm
 ## Scope
 
 This repository benchmarks Physics. It does not own or replace Physics algorithms, math types, or package implementation.
+
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="200" /></p>
