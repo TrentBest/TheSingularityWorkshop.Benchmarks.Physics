@@ -33,6 +33,23 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Capture benchmark provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p TheSingularityWorkshop.Benchmarks.Physics/results/environment
+          {
+            echo "benchmark_repository=TrentBest/TheSingularityWorkshop.Benchmarks.Physics"
+            echo "benchmark_commit=$(git -C TheSingularityWorkshop.Benchmarks.Physics rev-parse HEAD)"
+            echo "source_repository=TrentBest/TheSingularityWorkshop.Physics"
+            echo "source_commit=$(git -C TheSingularityWorkshop.Physics rev-parse HEAD)"
+            echo "captured_at_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "runner_os=$(uname -a)"
+            echo
+            dotnet --info
+            echo
+            lscpu
+          } > TheSingularityWorkshop.Benchmarks.Physics/results/environment/manifest.txt
       - name: Build benchmark harness
         run: dotnet build TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release
       - name: Run full Physics measurements
@@ -52,5 +69,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: physics-benchmark-artifacts
-          path: BenchmarkDotNet.Artifacts
+          path: |
+            BenchmarkDotNet.Artifacts/**
+            TheSingularityWorkshop.Benchmarks.Physics/results/environment/**
           if-no-files-found: warn
