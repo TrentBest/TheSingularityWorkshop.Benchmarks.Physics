@@ -7,9 +7,9 @@ Reproducible performance experiments for the Physics package. The suite measures
 | Experiment | Question | Dimensions |
 |---|---|---|
 | Vector3dBatch | Does caller-owned structure-of-arrays (SoA) arithmetic outperform an array-of-structures (AoS) baseline? | 128, 4,096, 65,536 vectors |
-| SweepAndPruneBroadphase | How do spatial distribution and candidate density affect broadphase cost? | 128, 512, 2,048 proxies; sparse, clustered, dense |
+| SweepAndPruneBroadphase | How do spatial distribution and candidate density affect broadphase cost? | 128, 512, 2,048 proxies; sparse, clustered, dense |\n| NewtonianNBodyStepper | How does the deterministic velocity-Verlet CPU reference scale with body population? | 8, 32, 128, 256 bodies |
 
-Fixture generation is outside timed methods. SoA/AoS addition is checked for exact component equality during setup. Broadphase output is checked against a brute-force AABB reference for every fixture, including deterministic pair ordering.
+Fixture generation is outside timed methods. SoA/AoS addition is checked for exact component equality during setup; note that the Vector3d operator baseline also performs finite-result validation while Vector3dBatch is a raw span kernel, so this is an API-cost comparison rather than identical validation work. Broadphase output is checked against a brute-force AABB reference for every fixture, including deterministic pair ordering. N-body output is checked for deterministic repeatability and ordinal body-ID ordering before timing. The N-body suite measures the current O(N²) implementation; it does not compare different integrators.
 
 ## Run locally
 
