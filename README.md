@@ -43,7 +43,7 @@ Run:
 dotnet run --project src/TheSingularityWorkshop.Benchmarks.Physics -c Release
 ```
 
-The CI workflow checks out Physics at an explicit commit SHA and runs a short smoke benchmark. Update that pinned SHA deliberately when changing the source revision under test.
+The CI workflow checks out Physics at an explicit commit SHA. Pushes and pull requests run Dry smoke cases for all three families; choose the **full** profile from Actions → Physics benchmarks → Run workflow for actual BenchmarkDotNet measurements and retained reports. Update the source SHA deliberately when changing the implementation revision under test.
 
 ## Evidence rules
 
