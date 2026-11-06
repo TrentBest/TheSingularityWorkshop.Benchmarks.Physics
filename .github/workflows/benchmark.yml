@@ -2,6 +2,13 @@ name: Physics benchmarks
 
 on:
   workflow_dispatch:
+    inputs:
+      profile:
+        description: Benchmark profile
+        required: true
+        default: full
+        type: choice
+        options: [smoke, full]
   pull_request:
     branches: [development]
   push:
@@ -13,6 +20,7 @@ permissions:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,11 +35,17 @@ jobs:
           dotnet-version: 8.0.x
       - name: Build benchmark harness
         run: dotnet build TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release
+      - name: Run full Physics measurements
+        if: github.event_name == 'workflow_dispatch' && inputs.profile == 'full'
+        run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*' --exporters json markdown
       - name: Run vector batch smoke benchmarks
+        if: github.event_name != 'workflow_dispatch' || inputs.profile == 'smoke'
         run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*Vector3dBatchBenchmarks*' --job Dry
       - name: Run broadphase smoke benchmarks
+        if: github.event_name != 'workflow_dispatch' || inputs.profile == 'smoke'
         run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*SweepAndPruneBenchmarks*' --job Dry
       - name: Run N-body smoke benchmarks
+        if: github.event_name != 'workflow_dispatch' || inputs.profile == 'smoke'
         run: dotnet run --project TheSingularityWorkshop.Benchmarks.Physics/src/TheSingularityWorkshop.Benchmarks.Physics/TheSingularityWorkshop.Benchmarks.Physics.csproj --configuration Release -- --filter '*NewtonianNBodyBenchmarks*' --job Dry
       - name: Upload BenchmarkDotNet artifacts
         if: always()
